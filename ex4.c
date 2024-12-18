@@ -1,16 +1,47 @@
 /******************
-Name:
-ID:
+Name: Oz Pinto
+ID: 212320733
 Assignment:
 *******************/
 #include <stdio.h>
 #include <string.h>
 
-void task1RobotPaths();
-void task2HumanPyramid();
-void task3ParenthesisValidator();
-void task4QueensBattle();
-void task5CrosswordGenerator();
+//calculates the total possible amount of paths to make it to (0,0) from given two coords on the grid
+int task1RobotPaths(int x, int y) {
+    //if the coords are negative return 0
+    if(x < 0 || y < 0)
+        return 0;
+
+    //if the destination was reached return 1 - success
+    if(x == 0 && y == 0)
+        return 1;
+
+    //if one side of the grid has been reached, keep progressing only through the other
+    if(x == 0 && y > 0)
+        return task1RobotPaths(x,y - 1);
+
+    if(x > 0 && y == 0)
+        return task1RobotPaths(x - 1,y);
+
+    if(x > 0 && y > 0)
+        return task1RobotPaths(x - 1, y) + task1RobotPaths(x, y - 1);
+}
+
+void task2HumanPyramid() {
+
+}
+
+void task3ParenthesisValidator() {
+
+}
+
+void task4QueensBattle() {
+
+}
+
+void task5CrosswordGenerator() {
+
+}
 
 int main()
 {
@@ -32,9 +63,20 @@ int main()
             case 6:
                 printf("Goodbye!\n");
                 break;
-            case 1:
-                task1RobotPaths();
+            case 1: {
+                int x, y, total_number_of_paths;
+
+                //get input for the coords
+                printf("Please enter the coordinates of the robot (column, row):\n");
+                scanf("%d %d", &x, &y);
+
+                //save the result
+                total_number_of_paths = task1RobotPaths(x, y);
+
+                //print the result
+                printf("The total number of paths the robot can take to reach home is: %d\n", total_number_of_paths);
                 break;
+            }
             case 2:
                 task2HumanPyramid();
                 break;
@@ -58,29 +100,4 @@ int main()
         }
 
     } while (task != 6);
-}
-
-void task1RobotPaths()
-{
-    // Todo
-}
-
-void task2HumanPyramid()
-{
-    // Todo
-}
-
-void task3ParenthesisValidator()
-{
-    // Todo
-}
-
-void task4QueensBattle()
-{
-    // Todo
-}
-
-void task5CrosswordGenerator()
-{
-    // Todo
 }
