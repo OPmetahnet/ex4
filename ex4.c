@@ -63,18 +63,19 @@ int main()
             case 6:
                 printf("Goodbye!\n");
                 break;
+                //
             case 1: {
-                int x, y, total_number_of_paths;
+                int x, y, total_path_number;
 
                 //get input for the coords
                 printf("Please enter the coordinates of the robot (column, row):\n");
                 scanf("%d %d", &x, &y);
 
                 //save the result
-                total_number_of_paths = task1RobotPaths(x, y);
+                total_path_number = task1RobotPaths(x, y);
 
                 //print the result
-                printf("The total number of paths the robot can take to reach home is: %d\n", total_number_of_paths);
+                printf("The total number of paths the robot can take to reach home is: %d\n", total_path_number);
                 break;
             }
             case 2:
