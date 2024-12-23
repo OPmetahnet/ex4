@@ -199,7 +199,7 @@ int colHasAQueen(
         return 1;
 
     //check the next space in the row
-    return rowHasAQueen(board, size, row + 1, col);
+    return colHasAQueen(board, size, row + 1, col);
 }
 
 //check if the surrounding diagonal spaces already have a queen in them
@@ -242,15 +242,6 @@ int zoneHasAQueen(
     int col,
     char zone_to_check
     ) {
-    // //if row is at 0 track back
-    // if(row < 0) {
-    //     return 0;
-    // }
-    //
-    // //if col is at 0 track back
-    // if(col < 0) {
-    //     return 0;
-    // }
 
     //if row exceeds given size track back
     if(row >= size) {
@@ -260,7 +251,6 @@ int zoneHasAQueen(
     //if col exceeds given size check the next/prev row
     if(col >= size) {
         return zoneHasAQueen(board, zone_map, size, row + 1, 0, zone_to_check);
-            // || zoneHasAQueen(board, zone_map, size, row - 1, 0, zone_to_check);
     }
 
     //if the zone type is the same as required check if there is a queen
@@ -269,9 +259,8 @@ int zoneHasAQueen(
             return 1;
     }
 
-    //check all directions and return the answer for the entire zone
+    //keep checking the column values
     return zoneHasAQueen(board, zone_map, size, row, col + 1, zone_to_check);
-    // zoneHasAQueen(board, zone_map, size, row, col - 1, zone_to_check) ||
 }
 
 //check all the conditions(row, col, zone, diagonal) to place a queen
@@ -286,20 +275,7 @@ int checkIllegalQueenPlacementConditions(
     return rowHasAQueen(board, size, row, 0) ||
         colHasAQueen(board, size, 0, col) ||
         diagonalHasAQueen(board, size, row, col) ||
-        zoneHasAQueen(board, zone_map, size, row, col, zone_map[row][col]);
-}
-
-//print the final solution
-void printSolution(char board[MAX_BOARD_SIZE][MAX_BOARD_SIZE], int size) {
-    for(int i = 0; i < size; i++) {
-        for(int j = 0; j < size; j++) {
-            if(board[i][j] == 'X')
-                printf("%c ", board[i][j]);
-            else
-                printf("* ");
-        }
-        printf("\n");
-    }
+        zoneHasAQueen(board, zone_map, size, 0, 0, zone_map[row][col]);
 }
 
 /*
@@ -322,7 +298,7 @@ int task4QueensBattle(
         return 0;
 
     //check if queen can be placed. if so, place it and continue the process
-    if(!checkIllegalQueenPlacementConditions(board, zone_map, size, row, col)) {
+    if(!(checkIllegalQueenPlacementConditions(board, zone_map, size, row, col))) {
 
         //try a possible solution path with the queen placed at the current coordinate
         board[row][col] = 'X';
@@ -338,6 +314,16 @@ int task4QueensBattle(
 
     //try the next index in the row
     return task4QueensBattle(board, zone_map, size, row, col + 1);
+}
+
+//print the final solution
+void printSolution(char board[MAX_BOARD_SIZE][MAX_BOARD_SIZE], int size) {
+    for(int i = 0; i < size; i++) {
+        for(int j = 0; j < size; j++) {
+            printf("%c ", board[i][j]);
+        }
+        printf("\n");
+    }
 }
 
 void task5CrosswordGenerator() {
