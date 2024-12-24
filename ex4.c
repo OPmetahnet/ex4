@@ -10,6 +10,10 @@ Assignment:
 #define NUM_OF_PYRAMID_LEVELS 5
 #define MAX_BOARD_SIZE 20
 #define MAX_CROSSWORD_GRID_SIZE 30
+#define MAX_SLOT_AMOUNT 100
+#define MAX_WORD_LENGTH 15
+#define NUMBER_OF_DETAILS 3
+#define HORIZONTAL 'H'
 
 //calculates the total possible amount of paths to make it to (0,0) from given two coords on the grid
 int task1RobotPaths(int x, int y) {
@@ -317,7 +321,7 @@ int task4QueensBattle(
 }
 
 //print the final solution
-void printSolution(char board[MAX_BOARD_SIZE][MAX_BOARD_SIZE], int size) {
+void printQueensSolution(char board[MAX_BOARD_SIZE][MAX_BOARD_SIZE], int size) {
     for(int i = 0; i < size; i++) {
         for(int j = 0; j < size; j++) {
             printf("%c ", board[i][j]);
@@ -326,8 +330,317 @@ void printSolution(char board[MAX_BOARD_SIZE][MAX_BOARD_SIZE], int size) {
     }
 }
 
-void task5CrosswordGenerator() {
+//initializes the grid to #
+void initGridValues(char grid[MAX_CROSSWORD_GRID_SIZE][MAX_CROSSWORD_GRID_SIZE],
+    int dimension,
+    int i,
+    int j) {
+    //if rows are done insertion is complete
+    if(i >= dimension)
+        return;
 
+    //if col index has reached the end of the col go to the next row
+    if(j >= dimension)
+        return initGridValues(grid, dimension, i + 1, 0);
+
+    //set value to #
+    grid[i][j] = '#';
+
+    //go to the next column
+    initGridValues(grid, dimension, i, j + 1);
+}
+
+//checks if the horizontal word space is already occupied
+int wordCanBePlacedHorizontally(char grid[MAX_CROSSWORD_GRID_SIZE][MAX_CROSSWORD_GRID_SIZE],
+    int word_length,
+    int row_index,
+    int col_index,
+    int i,
+    char word[MAX_WORD_LENGTH]) {
+
+    //if end of line is reached - not occupied
+    if(i >= word_length)
+        return 1;
+
+    //if a letter is found - check equation between characters
+    if(grid[row_index][col_index] != '#') {
+        if(grid[row_index][col_index] == word[i]) {
+            return  wordCanBePlacedHorizontally(grid,
+                word_length,
+                row_index,
+                col_index + 1,
+                i + 1,
+                word);
+        }
+
+        return 0;
+    }
+
+    //check next index
+    return wordCanBePlacedHorizontally(grid,
+        word_length,
+        row_index,
+        col_index + 1,
+        i + 1,
+        word);
+}
+
+//checks if the vertical word space is already occupied
+int wordCanBePlacedVertically(char grid[MAX_CROSSWORD_GRID_SIZE][MAX_CROSSWORD_GRID_SIZE],
+    int word_length,
+    int row_index,
+    int col_index,
+    int j,
+    char word[MAX_WORD_LENGTH]) {
+
+    //if end of line is reached - not occupied
+    if(j >= word_length)
+        return 1;
+
+    //if a letter is found - check equation between characters
+    if(grid[row_index][col_index] != '#') {
+        if(grid[row_index][col_index] == word[j]) {
+            return wordCanBePlacedVertically(grid,
+            word_length,
+            row_index + 1,
+            col_index,
+            j + 1,
+            word);
+        }
+
+        return 0;
+    }
+
+    //check next index
+    return wordCanBePlacedVertically(grid,
+        word_length,
+        row_index + 1,
+        col_index,
+        j + 1,
+        word);
+}
+
+//checks if the intended word space is already occupied
+int wordCanBePlaced(char grid[MAX_CROSSWORD_GRID_SIZE][MAX_CROSSWORD_GRID_SIZE],
+    int word_length,
+    int row_index,
+    int col_index,
+    int i,
+    int j,
+    char direction,
+    char word[MAX_WORD_LENGTH][MAX_WORD_LENGTH]) {
+
+    if(direction == HORIZONTAL) return wordCanBePlacedHorizontally(grid, word_length, row_index, col_index, i, word);
+    return wordCanBePlacedVertically(grid, word_length, row_index, col_index, j, word);
+}
+
+//place a given word in the matching slot horizontally
+void placeWordInSlotHorizontally(char grid[MAX_CROSSWORD_GRID_SIZE][MAX_CROSSWORD_GRID_SIZE],
+    char word[MAX_WORD_LENGTH],
+    int word_length,
+    int row_index,
+    int col_index,
+    int i) {
+
+    //if end of word is reached return
+    if(i >= word_length) {
+        return;
+    }
+
+    //place the character in the corresponding place
+    grid[row_index][col_index] = word[i];
+
+    //place the next character
+    placeWordInSlotHorizontally(grid,
+                    word,
+                    word_length,
+                    row_index,
+                    col_index + 1,
+                    i + 1);
+}
+
+//erases a word from a place it was placed in horizontally
+void eraseWordFromSlotHorizontally(char grid[MAX_CROSSWORD_GRID_SIZE][MAX_CROSSWORD_GRID_SIZE],
+    int word_length,
+    int row_index,
+    int col_index,
+    int i) {
+
+    //if end of word is reached return
+    if(i >= word_length) {
+        return;
+    }
+
+    //place the character in the corresponding place
+    grid[row_index][col_index] = '#';
+
+    //place the next character
+    eraseWordFromSlotHorizontally(grid,
+                    word_length,
+                    row_index,
+                    col_index + 1,
+                    i + 1);
+}
+
+//place a given word in the matching slot vertically
+void placeWordInSlotVertically(char grid[MAX_CROSSWORD_GRID_SIZE][MAX_CROSSWORD_GRID_SIZE],
+    char word[MAX_WORD_LENGTH],
+    int word_length,
+    int row_index,
+    int col_index,
+    int j) {
+
+    //if end of word is reached return
+    if(j >= word_length) {
+        return;
+    }
+
+    //place the character in the corresponding place
+    grid[row_index][col_index] = word[j];
+
+    //place the next character
+    placeWordInSlotVertically(grid,
+                    word,
+                    word_length,
+                    row_index + 1,
+                    col_index,
+                    j + 1);
+}
+
+//erases a word from a place it was placed in horizontally
+void eraseWordFromSlotVertically(char grid[MAX_CROSSWORD_GRID_SIZE][MAX_CROSSWORD_GRID_SIZE],
+    int word_length,
+    int row_index,
+    int col_index,
+    int j) {
+
+    //if end of word is reached return
+    if(j >= word_length) {
+        return;
+    }
+
+    //place the character in the corresponding place
+    grid[row_index][col_index] = '#';
+
+    //place the next character
+    eraseWordFromSlotVertically(grid,
+                    word_length,
+                    row_index + 1,
+                    col_index,
+                    j + 1);
+}
+
+
+//try to build a crossword on given grid
+int task5CrosswordGenerator(char grid[MAX_BOARD_SIZE][MAX_BOARD_SIZE],
+    int dimension,
+    int slot_details[MAX_SLOT_AMOUNT][NUMBER_OF_DETAILS],
+    int number_of_slots,
+    char dictionary[MAX_SLOT_AMOUNT][MAX_WORD_LENGTH],
+    int number_of_words,
+    char directions[MAX_SLOT_AMOUNT],
+    int i,
+    int j,
+    int used_words[MAX_SLOT_AMOUNT]
+    ) {
+
+    //if all slots have been filled crossword has been successfully created
+    if(i >= number_of_slots)
+        return 1;
+
+    //if number of words has been exceeded back track
+    if(j >= number_of_words)
+        return 0;
+
+    //check if the word fits in the current slot and if it wasn't already used
+    if(strlen(dictionary[j]) == slot_details[i][2] && used_words[j] == 0 &&
+        wordCanBePlaced(grid,
+            strlen(dictionary[j]),
+            slot_details[i][0],
+            slot_details[i][1],
+            0,
+            0,
+            directions[i],
+            dictionary[j])) {
+
+        //place word in slot depending on the direction
+        if(directions[i] == HORIZONTAL) {
+            placeWordInSlotHorizontally(grid,
+                dictionary[j],
+                strlen(dictionary[j]),
+                slot_details[i][0],
+                slot_details[i][1],
+                0);
+        }
+        else {
+            placeWordInSlotVertically(grid,
+                dictionary[j],
+                strlen(dictionary[j]),
+                slot_details[i][0],
+                slot_details[i][1],
+                0);
+        }
+
+        //mark the word as used so that we won't be able to use it once more
+        used_words[j] = 1;
+
+        //try placing a word in the next slot
+        if(task5CrosswordGenerator(grid,
+            dimension,
+            slot_details,
+            number_of_slots,
+            dictionary,
+            number_of_words,
+            directions,
+            i + 1,
+            0,
+            used_words)) {
+            return 1;
+        }
+
+        /*
+         if solution path wasn't successful, erase the word from the space it was put in
+         additionally, reset used words to all 0's
+        */
+        used_words[j] = 0;
+
+        if(directions[i] == HORIZONTAL) {
+            eraseWordFromSlotHorizontally(grid,
+                strlen(dictionary[j]),
+                slot_details[i][0],
+                slot_details[i][1],
+                0);
+        }
+        else {
+            eraseWordFromSlotVertically(grid,
+                strlen(dictionary[j]),
+                slot_details[i][0],
+                slot_details[i][1],
+                0);
+        }
+    }
+
+    //try testing the next word
+    return task5CrosswordGenerator(grid,
+        dimension,
+        slot_details,
+        number_of_slots,
+        dictionary,
+        number_of_words,
+        directions,
+        i,
+        j + 1,
+        used_words);
+}
+
+//print the final crossword solution
+void printCrosswordPuzzleSolution(char grid[MAX_CROSSWORD_GRID_SIZE][MAX_CROSSWORD_GRID_SIZE], int dimension) {
+    for(int i = 0; i < dimension; i++) {
+        for(int j = 0; j < dimension; j++) {
+            printf("| %c ", grid[i][j]);
+        }
+        printf("\n");
+    }
 }
 
 int main()
@@ -445,7 +758,7 @@ int main()
 
                 if(result) {
                     printf("Solution:\n");
-                    printSolution(board, size);
+                    printQueensSolution(board, size);
                 }
                 else
                     printf("This puzzle cannot be solved.\n");
@@ -455,12 +768,71 @@ int main()
 
             //creates a crossword puzzle from given words and grid size, if possible
             case 5: {
-                int dimension, slot_number;
-                char grid[MAX_CROSSWORD_GRID_SIZE][MAX_CROSSWORD_GRID_SIZE];
+                int dimension, number_of_slots, number_of_words;
+                char grid[MAX_CROSSWORD_GRID_SIZE][MAX_CROSSWORD_GRID_SIZE] = {0};
+                char dictionary[MAX_SLOT_AMOUNT][MAX_WORD_LENGTH];
+                char directions[MAX_SLOT_AMOUNT];
+                int slot_details[MAX_SLOT_AMOUNT][NUMBER_OF_DETAILS];
+                int used_words[MAX_SLOT_AMOUNT] = {0};
 
+                //get dimension
                 printf("Please enter the dimensions of the crossword grid:\n");
+                scanf("%d", &dimension);
 
-                task5CrosswordGenerator();
+                //get the amount of slots
+                printf("Please enter the number of slots in the crossword:\n");
+                scanf("%d", &number_of_slots);
+
+                //get the details for the skeleton of the crossword
+                printf("Please enter the details for each slot (Row, Column, Length, Direction):\n");
+                for(int i = 0; i < number_of_slots; i++) {
+                        scanf("%d %d %d %c",
+                            &slot_details[i][0],
+                            &slot_details[i][1],
+                            &slot_details[i][2],
+                            &directions[i]);
+                }
+
+                //get the number of words in the dictionary
+                printf("Please enter the number of words in the dictionary:\n");
+                scanf("%d", &number_of_words);
+
+                //if number of words is smaller than the number of slots ask for number of words again
+                while(number_of_words < number_of_slots) {
+                    printf("The dictionary must contain at least %d words."
+                           " Please enter a valid dictionary size:\n", number_of_slots);
+                    scanf("%d", &number_of_words);
+                }
+
+                //get the words for the dictionary
+                printf("Please enter the words for the dictionary:\n");
+                for(int i = 0; i < number_of_words; i++) {
+                    scanf("%s", &dictionary[i]);
+                }
+
+                //initialize values for the grid with # before sending it to the function
+                initGridValues(grid, dimension, 0, 0);
+
+                //check for a possible crossword puzzle creation path
+                int result = task5CrosswordGenerator(grid,
+                    dimension,
+                    slot_details,
+                    number_of_slots,
+                    dictionary,
+                    number_of_words,
+                    directions,
+                    0,
+                    0,
+                    used_words);
+
+                //print messages accordingly to whether a crossword was generated or not
+                if(result) {
+                    printCrosswordPuzzleSolution(grid, dimension);
+                }
+                else {
+                    printf("This crossword cannot be solved.\n");
+                }
+
                 break;
             }
             default:
