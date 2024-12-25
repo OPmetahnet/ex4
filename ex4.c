@@ -103,41 +103,51 @@ int checkIfCloseParenthesis(char char_to_check) {
     }
 }
 
-//checks if two parentheses given are matching
-int checkParenthesisMatch(char open_parenthesis, char closed_parenthesis) {
-    switch (open_parenthesis) {
-        case '(': return (closed_parenthesis == ')');
-        case '{': return (closed_parenthesis == '}');
-        case '[': return (closed_parenthesis == ']');
-        case '<': return (closed_parenthesis == '>');
-        default: return 0;
+//checks for the matching closer for the opened parenthesis
+char checkParenthesisMatchingCloser(char openParenthesis) {
+    switch (openParenthesis) {
+        case '(': return ')';
+        case '{': return '}';
+        case '[': return ']';
+        case '<': return '>';
+        default: return '\0';
     }
 }
 
-//gets input until \n and checks if the parentheses in the expression are well organized
-int task3ParenthesisValidator(char input_char, char parenthesis_to_close) {
-    //get character
-    scanf("%c", &input_char);
+//cleans the buffer
+void cleanBuffer() {
+    scanf("%*s");
+}
 
-    //if the end of the string is reached
-    if(input_char == '\n') {
+//gets input until \n and checks if the parentheses in the expression are well organized
+int task3ParenthesisValidator(char inputChar, char parenthesisToFind) {
+    //get character
+    scanf("%c", &inputChar);
+
+    //if the end of the string is reached, check if there are no more opened parentheses which were not closed
+    if(inputChar == '\n') {
+        return parenthesisToFind == '\0';
+    }
+
+    //if new open parenthesis was inputted start a new recursive search for the right closer
+    if(checkIfOpenParenthesis(inputChar)) {
+        return task3ParenthesisValidator(inputChar, checkParenthesisMatchingCloser(inputChar)) &&
+            task3ParenthesisValidator(inputChar, parenthesisToFind);
+    }
+
+    //if closer parenthesis check if it matches the required closer
+    if(checkIfCloseParenthesis(inputChar)) {
+        //if the closer isn't matching - clean buffer and end validation
+        if(inputChar != parenthesisToFind) {
+            cleanBuffer();
+            return 0;
+        }
+
         return 1;
     }
 
-    //if closed parenthesis
-    if(checkIfCloseParenthesis(input_char)) {
-        if(checkParenthesisMatch(input_char, parenthesis_to_close)) {
-            return 1;
-        }
-    }
-
-    //if new opened parenthesis
-    if(checkIfOpenParenthesis(input_char)) {
-        return (task3ParenthesisValidator(input_char, input_char));
-    }
-
-    //keep checking
-    return task3ParenthesisValidator(input_char, parenthesis_to_close);
+    //check the next character
+    return task3ParenthesisValidator(inputChar, parenthesisToFind);
 }
 
 
@@ -714,23 +724,19 @@ int main()
 
             //gets input and checks if parentheses are opened and closed in a valid way
             case 3: {
-                char input_char = '\0';
+                char inputChar = '\0';
 
                 //get input for term
                 printf("Please enter a term for validation:\n");
-                scanf("%c", &input_char);
+                scanf("%c", &inputChar);
 
                 //checks the term's validity
-                int is_string_valid = task3ParenthesisValidator(input_char, '\0');
-
-                //clean buffer after the function's end
-                scanf("%*[^\n]");
-                scanf("%*c");
+                int isStringValid = task3ParenthesisValidator(inputChar, '\0');
 
                 //prints result based on the check
-                if(is_string_valid == 0)
+                if(isStringValid == 0)
                     printf("The parentheses are not balanced correctly.\n");
-                if(is_string_valid == 1) {
+                if(isStringValid == 1) {
                     printf("The parentheses are balanced correctly.\n");
                 }
 
